@@ -48,9 +48,12 @@ svg { width: 1.35rem; height: 1.35rem; flex: none; fill: none; stroke: currentCo
 .brand-icon { width: 39px; height: 39px; display: grid; place-items: center; border-radius: 11px; color: var(--yellow); background: var(--blue-deep); box-shadow: inset 0 1px 1px #ffffff4d, 0 2px 5px #2854cb27; }
 .brand-icon svg { width: 23px; height: 23px; }
 .brand-accent { color: var(--blue); }
+.topbar-actions { display: flex; align-items: center; gap: 10px; }
+.history-link { display: inline-flex; align-items: center; gap: 7px; padding: 8px 10px; border-radius: 9px; color: var(--blue-deep); font-size: .875rem; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.history-link svg { width: 17px; height: 17px; }
 .help-button { display: flex; align-items: center; gap: 8px; padding: 8px 13px; border: 1px solid var(--line); background: #fff; border-radius: 9px; font-size: .875rem; font-weight: 700; white-space: nowrap; }
 .help-button svg { width: 17px; height: 17px; color: var(--blue); }
-.help-button:hover, .icon-button:hover { background: #eff4ff; }
+.help-button:hover, .history-link:hover, .icon-button:hover { background: #eff4ff; }
 .main { width: min(1040px, calc(100% - 80px)); margin: 0 auto; flex: 1; }
 .intro { text-align: center; padding: 52px 0 37px; }
 .intro h1 { font: 800 clamp(2.85rem, 6.3vw, 4.65rem)/1.04 var(--title-font); letter-spacing: -.048em; text-wrap: balance; }
@@ -204,6 +207,13 @@ svg { width: 1.35rem; height: 1.35rem; flex: none; fill: none; stroke: currentCo
 .battle h2 { color: #6c4b08; font-size: .875rem; font-weight: 700; }
 .battle-headline { margin-top: 4px; font: 700 1.55rem/1.16 var(--title-font); }
 .battle-detail { margin-top: 6px; color: var(--muted); line-height: 1.45; }
+.trade-record { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; margin: -8px 0 24px; }
+.save-trade-button { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 8px 13px; border: 1px solid var(--blue-deep); border-radius: 9px; background: var(--blue-deep); color: white; font-size: .9375rem; font-weight: 700; }
+.save-trade-button svg { width: 18px; height: 18px; }
+.save-trade-button:hover { background: var(--blue); }
+.save-trade-button[aria-disabled="true"] { border-color: #bbdac8; color: #175639; background: #e9f8f0; cursor: default; }
+.save-trade-status { color: var(--ink); font-size: .875rem; }
+.save-trade-status:empty { display: none; }
 .tips { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 14px; background: #fff; margin-bottom: 34px; }
 .tip { padding: 16px 15px; display: flex; align-items: flex-start; gap: 10px; }
 .tip + .tip { border-left: 1px solid #e5edfb; }
@@ -214,6 +224,25 @@ svg { width: 1.35rem; height: 1.35rem; flex: none; fill: none; stroke: currentCo
 .tip-green { background: #e3f7ed; color: #087453; }
 .tip h2 { font: 700 1.01rem/1.2 var(--title-font); }
 .tip p { margin-top: 3px; color: var(--muted); font-size: .875rem; line-height: 1.4; }
+.history { padding: 22px; margin-bottom: 34px; border: 1px solid var(--line); border-radius: 18px; background: #fff; box-shadow: 0 8px 28px #162a610b; scroll-margin-top: 18px; }
+.history-heading { display: flex; align-items: center; gap: 12px; }
+.history-heading .tip-icon { width: 41px; height: 41px; }
+.history-heading .tip-icon svg { width: 22px; height: 22px; }
+.history-heading h2 { font: 700 1.65rem/1.15 var(--title-font); }
+.history-heading p { margin-top: 3px; color: var(--muted); font-size: .875rem; }
+.history-empty { padding: 15px; border: 1px dashed #c4d5f7; border-radius: 10px; margin-top: 16px; background: #f5f8ff; color: var(--muted); line-height: 1.45; }
+.history-list { display: grid; gap: 13px; padding: 0; margin: 17px 0 0; list-style: none; }
+.history-entry { padding: 13px; border: 1px solid var(--line); border-radius: 12px; }
+.history-entry time { display: block; margin-bottom: 9px; color: var(--muted); font-size: .875rem; font-weight: 600; }
+.history-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.history-card { --side-ink: var(--blue-deep); --side-soft: #e5edff; display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 9px; background: #f1f6ff; }
+.history-card:last-child { --side-ink: #724c00; --side-soft: #ffec9a; background: #fffae7; }
+.history-card .artwork { width: 43px; flex: none; border-radius: 4px; }
+.history-card-copy { min-width: 0; overflow-wrap: anywhere; }
+.history-direction { margin-bottom: 3px; color: var(--side-ink); font-size: .875rem; font-weight: 700; }
+.history-name { font: 700 1.1rem/1.2 var(--title-font); }
+.history-card-detail { margin-top: 3px; font-size: .875rem; line-height: 1.35; color: var(--muted); }
+.history-price { margin-top: 4px; font-size: .875rem; line-height: 1.35; font-weight: 600; }
 .footer { border-top: 1px solid #ffffffb8; background: #ffffff6e; color: var(--muted); font-size: .8125rem; }
 .footer-inner { min-height: 55px; gap: 10px 24px; flex-wrap: wrap; padding-block: 12px; }
 .footer a { text-underline-offset: 3px; text-decoration-color: #819ad9; }
@@ -245,7 +274,9 @@ svg { width: 1.35rem; height: 1.35rem; flex: none; fill: none; stroke: currentCo
 }
 @media (max-width: 670px) {
   .main, .topbar-inner, .footer-inner { width: calc(100% - 32px); }
-  .topbar-inner { min-height: 58px; }
+  .topbar-inner { min-height: 58px; flex-wrap: wrap; gap: 7px; padding-block: 8px; }
+  .topbar-actions { gap: 4px; }
+  .history-link, .help-button { font-size: .8125rem; }
   .brand-icon { width: 34px; height: 34px; }
   .brand { font-size: 1.25rem; gap: 8px; }
   .help-button { padding: 7px 8px; }
@@ -260,4 +291,9 @@ svg { width: 1.35rem; height: 1.35rem; flex: none; fill: none; stroke: currentCo
   .tips { grid-template-columns: 1fr; margin-bottom: 24px; }
   .tip { padding: 12px; }
   .tip + .tip { border-left: 0; border-top: 1px solid #e5edfb; }
+  .history { padding: 15px; margin-bottom: 24px; }
+}
+@media (max-width: 520px) {
+  .history-cards { grid-template-columns: 1fr; }
+  .topbar-actions svg { display: none; }
 }

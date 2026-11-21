@@ -3,6 +3,8 @@
 const apiRoot = "https://api.tcgdex.net/v2/en/";
 const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 const dateLabel = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeZone: "UTC" });
+const historyDateLabel = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" });
+const historyKeyPrefix = "trade-check:completed:v1:";
 const maxPriceAge = 30 * 24 * 60 * 60 * 1000;
 const resultStep = 8;
 
@@ -37,11 +39,18 @@ const verdict = document.querySelector("#verdict");
 const battle = document.querySelector("#battle");
 const battleResult = document.querySelector("#battle-result");
 const actionNote = document.querySelector("#action-note");
+const tradeRecord = document.querySelector("#trade-record");
+const saveTradeButton = document.querySelector("#save-trade");
+const saveTradeStatus = document.querySelector("#save-trade-status");
+const historyList = document.querySelector("#history-list");
+const historyEmpty = document.querySelector("#history-empty");
+const historyError = document.querySelector("#history-error");
 const help = document.querySelector("#help-dialog");
 const swapButton = iconButton("swap", "Swap the two cards", "swap-button");
 const searchCache = new Map();
 let setsPromise;
 let demo = false;
+let savedSelection = null;
 
 function el(tag, className, label) {
   const element = document.createElement(tag);
@@ -220,6 +229,114 @@ function getPrintings(card) {
 
 function selectedQuote(side) {
   return side.finish === "" ? null : side.card?.printings[Number(side.finish)];
+}
+
+function tradeCardSnapshot(side) {
+  const { card } = side;
+  const quote = selectedQuote(side);
+  const updated = Date.parse(quote?.updated);
+  return {
+    name: card.name,
+    edition: editionLabel(card, card.set),
+    finish: quote?.label ?? null,
+    image: card.image ?? null,
+    value: quote?.value ?? null,
+    priceDate: Number.isFinite(updated) ? updated : null,
+  };
+}
+
+function readTradeHistory() {
+  const trades = [];
+  for (const key of Object.keys(localStorage)) {
+    if (!key.startsWith(historyKeyPrefix)) continue;
+    const raw = localStorage.getItem(key);
+    let trade;
+    try {
+      trade = JSON.parse(raw);
+    } catch {
+      continue;
+    }
+    if (Number.isFinite(trade?.savedAt) && Number.isFinite(new Date(trade.savedAt).getTime()) &&
+      Array.isArray(trade.cards) && trade.cards.length === 2 &&
+      trade.cards.every(card => typeof card?.name === "string" && typeof card.edition === "string")) {
+      trades.push(trade);
+    }
+  }
+  return trades.sort((earlier, later) => later.savedAt - earlier.savedAt);
+}
+
+function historyCard(card, direction) {
+  const panel = el("div", "history-card");
+  const copy = el("div", "history-card-copy");
+  const edition = typeof card.finish === "string" ? card.edition + " · " + card.finish : card.edition;
+  copy.append(
+    el("p", "history-direction", direction),
+    el("h3", "history-name", card.name),
+    el("p", "history-card-detail", edition),
+  );
+  if (Number.isFinite(card.value) && card.value > 0) {
+    const priceDate = Number.isFinite(card.priceDate) && Number.isFinite(new Date(card.priceDate).getTime())
+      ? " · " + dateLabel.format(card.priceDate) : "";
+    copy.append(el("p", "history-price", money.format(card.value) + " USD estimate" + priceDate));
+  } else {
+    copy.append(el("p", "history-card-detail", "Price unavailable"));
+  }
+  panel.append(artwork(card.image), copy);
+  return panel;
+}
+
+function renderHistory() {
+  let trades;
+  try {
+    trades = readTradeHistory();
+  } catch {
+    historyList.hidden = true;
+    historyEmpty.hidden = true;
+    historyError.hidden = false;
+    return;
+  }
+  historyError.hidden = true;
+  historyList.hidden = trades.length === 0;
+  historyEmpty.hidden = trades.length > 0;
+  historyList.replaceChildren(...trades.map(trade => {
+    const entry = el("li", "history-entry");
+    const when = el("time", "", historyDateLabel.format(trade.savedAt));
+    when.dateTime = new Date(trade.savedAt).toISOString();
+    const cards = el("div", "history-cards");
+    cards.append(historyCard(trade.cards[0], "Gave"), historyCard(trade.cards[1], "Got"));
+    entry.append(when, cards);
+    return entry;
+  }));
+}
+
+function currentTradeSaved() {
+  return savedSelection?.every(({ card, finish }, index) => sides[index].card === card && sides[index].finish === finish) ?? false;
+}
+
+function renderSaveTrade() {
+  const saved = currentTradeSaved();
+  saveTradeButton.setAttribute("aria-disabled", String(saved));
+  saveTradeStatus.replaceChildren();
+  if (saved) {
+    const link = el("a", "", "View trade history");
+    link.href = "#trade-history";
+    saveTradeStatus.append("Trade saved. ", link);
+  }
+}
+
+function saveTrade() {
+  if (tradeRecord.hidden || demo || currentTradeSaved()) return;
+  const trade = { savedAt: Date.now(), cards: sides.map(tradeCardSnapshot) };
+  try {
+    // A separate key for each trade keeps simultaneous saves in different tabs independent.
+    localStorage.setItem(historyKeyPrefix + crypto.randomUUID(), JSON.stringify(trade));
+  } catch {
+    saveTradeStatus.textContent = "Couldn’t save this trade. Check that browser storage is available, then try again.";
+    return;
+  }
+  savedSelection = sides.map(({ card, finish }) => ({ card, finish }));
+  renderSaveTrade();
+  renderHistory();
 }
 
 function isFresh(quote) {
@@ -490,6 +607,7 @@ function resetSide(side) {
 function leaveExample() {
   if (!demo) return;
   demo = false;
+  clearVerdict();
   for (const side of sides) {
     resetSide(side);
     side.input.value = "";
@@ -595,6 +713,8 @@ function addPanel(side) {
 
 function clearVerdict() {
   verdict.hidden = true;
+  tradeRecord.hidden = true;
+  saveTradeStatus.textContent = "";
   actionNote.textContent = "";
 }
 
@@ -608,6 +728,8 @@ function showVerdict(title, description, meta, mood = "") {
   body.append(icon(mood === "positive" ? "check" : mood === "caution" ? "info" : "scale"), copy);
   verdict.replaceChildren(body);
   verdict.hidden = false;
+  tradeRecord.hidden = demo;
+  if (!demo) renderSaveTrade();
   verdict.focus({ preventScroll: true });
   verdict.scrollIntoView({ block: "nearest" });
 }
@@ -696,6 +818,11 @@ swapButton.addEventListener("click", swap);
 document.querySelector("#compare").addEventListener("click", compare);
 document.querySelector("#example").addEventListener("click", loadExample);
 document.querySelector("#help-button").addEventListener("click", () => help.showModal());
+saveTradeButton.addEventListener("click", saveTrade);
+renderHistory();
+window.addEventListener("storage", event => {
+  if (event.key === null || event.key.startsWith(historyKeyPrefix)) renderHistory();
+});
 document.addEventListener("pointerdown", event => {
   for (const side of sides) {
     if (!side.form.contains(event.target)) stopSearch(side);

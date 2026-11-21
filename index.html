@@ -29,6 +29,7 @@
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
     <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8h.01"/></symbol>
     <symbol id="i-bolt" viewBox="0 0 24 24"><path d="m13 2-8 12h6l-1 8 9-12h-6l1-8Z"/></symbol>
+    <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 11a9 9 0 1 1 2 7m-2-7V5m0 6h6m3-4v5l3 2"/></symbol>
   </svg>
   <header class="topbar">
     <div class="topbar-inner">
@@ -36,7 +37,10 @@
         <span class="brand-icon"><svg><use href="#i-brand"/></svg></span>
         <span>Trade<span class="brand-accent">Check</span></span>
       </a>
-      <button class="help-button" id="help-button" type="button"><svg><use href="#i-help"/></svg> How it works</button>
+      <nav class="topbar-actions" aria-label="Trade Check">
+        <a class="history-link" href="#trade-history"><svg aria-hidden="true"><use href="#i-history"/></svg> Trade history</a>
+        <button class="help-button" id="help-button" type="button"><svg aria-hidden="true"><use href="#i-help"/></svg> How it works</button>
+      </nav>
     </div>
   </header>
   <main class="main">
@@ -70,6 +74,10 @@
           </div>
         </section>
       </div>
+      <div class="trade-record" id="trade-record" hidden>
+        <button class="save-trade-button" id="save-trade" type="button"><svg aria-hidden="true"><use href="#i-check"/></svg> Save completed trade</button>
+        <p class="save-trade-status" id="save-trade-status" role="status"></p>
+      </div>
       <div class="tips" aria-label="What to check before trading">
         <article class="tip">
           <span class="tip-icon tip-blue"><svg><use href="#i-number"/></svg></span>
@@ -84,6 +92,18 @@
           <div><h2>Look for wear</h2><p>Creases and scratches can lower the value.</p></div>
         </article>
       </div>
+    </section>
+    <section class="history" id="trade-history" aria-labelledby="history-title">
+      <div class="history-heading">
+        <span class="tip-icon tip-blue"><svg aria-hidden="true"><use href="#i-history"/></svg></span>
+        <div>
+          <h2 id="history-title">Trade history</h2>
+          <p>Saved in this browser.</p>
+        </div>
+      </div>
+      <p class="history-empty" id="history-empty">After you make a trade, use <strong>Save completed trade</strong> to add it here.</p>
+      <p class="history-empty" id="history-error" hidden>Trade history is unavailable because this browser is blocking local storage.</p>
+      <ol class="history-list" id="history-list" role="list" hidden></ol>
     </section>
   </main>
   <footer class="footer">
@@ -103,6 +123,7 @@
       <li><strong>Choose the exact finish.</strong> Check for foil, a first edition stamp or a store stamp. If your printing is missing, look up recent sales for it.</li>
       <li><strong>Compare the prices.</strong> A difference of up to 10% of the higher price or 25¢, whichever is larger, counts as about even.</li>
       <li><strong>Compare game stats.</strong> See each card’s HP and biggest attack with a fixed printed damage number. Energy costs, abilities and your deck can change which card plays better.</li>
+      <li><strong>Save a completed trade.</strong> After you make the trade, press Save completed trade to record it in this browser.</li>
     </ol>
     <p>Compare ungraded English cards in similar condition. Take extra care with expensive cards or prices more than 30 days old.</p>
     <form method="dialog"><button class="dialog-button" value="close">Got it</button></form>
