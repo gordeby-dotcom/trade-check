@@ -18,14 +18,24 @@ const priceLabels = {
   "unlimited-holofoil": "Unlimited · Holofoil",
 };
 const standardTypes = { normal: "normal", reverse: "reverse-holofoil", holo: "holofoil" };
+const energyNames = {
+  C: "Colorless", D: "Darkness", F: "Fighting", G: "Grass", L: "Lightning", M: "Metal",
+  N: "Dragon", P: "Psychic", R: "Fire", W: "Water", Y: "Fairy",
+};
 const exampleCards = [
   {
     id: "sv03.5-025", name: "Pikachu", localId: "025", rarity: "Common", value: 0.8,
-    hp: 60, attacks: [{ name: "Pika Punch", damage: 50, cost: ["Lightning", "Lightning", "Colorless"] }],
+    hp: 60, attacks: [
+      { name: "Charge", cost: ["Lightning"], effect: "Find a Basic Lightning Energy in your deck, attach it to Pikachu, then shuffle." },
+      { name: "Pika Punch", damage: 50, cost: ["Lightning", "Lightning", "Colorless"] },
+    ],
   },
   {
     id: "sv03.5-004", name: "Charmander", localId: "004", rarity: "Common", value: 0.72,
-    hp: 70, attacks: [{ name: "Steady Firebreathing", damage: 30, cost: ["Fire", "Fire"] }],
+    hp: 70, attacks: [
+      { name: "Blazing Destruction", cost: ["Fire"], effect: "Discard a Stadium in play." },
+      { name: "Steady Firebreathing", damage: 30, cost: ["Fire", "Fire"] },
+    ],
   },
 ];
 
@@ -378,6 +388,56 @@ function rarityBadge(rarity) {
   return badge;
 }
 
+function attackEnergy(attack) {
+  if (!Array.isArray(attack.cost)) return null;
+  return attack.cost.map(symbol => typeof symbol === "string" ? symbol.trim() : "")
+    .filter(symbol => symbol && symbol.toLowerCase() !== "free");
+}
+
+function attackCostLabel(attack) {
+  const cost = attackEnergy(attack);
+  if (!cost) return "Energy cost unavailable";
+  if (!cost.length) return "No Energy required";
+  const counts = new Map();
+  for (const type of cost) counts.set(type, (counts.get(type) ?? 0) + 1);
+  const parts = [...counts].map(([type, count]) => count + " " + (type === "Colorless" ? "of any type" : type));
+  return "Energy cost · " + parts.join(" + ");
+}
+
+function attacksSection(side) {
+  const section = el("section", "attacks");
+  const heading = el("h4", "attacks-title");
+  heading.id = side.id + "-attacks-title";
+  heading.append(icon("bolt"), "Attacks");
+  section.setAttribute("aria-labelledby", heading.id);
+  section.append(heading);
+
+  if (!side.card.attacks?.length) {
+    section.append(el("p", "attack-detail", "Attack data unavailable for this printing."));
+    return section;
+  }
+
+  const list = el("ul", "attack-list");
+  list.setAttribute("role", "list");
+  for (const attack of side.card.attacks) {
+    const item = el("li", "attack-row");
+    const top = el("div", "attack-top");
+    top.append(el("strong", "attack-name", attack.name));
+    const damage = String(attack.damage ?? "").trim();
+    if (damage && damage !== "-" && damage !== "—") {
+      top.append(el("span", "attack-damage", damage + " damage"));
+    }
+    item.append(top, el("p", "attack-detail", attackCostLabel(attack)));
+    if (attack.effect) {
+      const effect = attack.effect.replace(/\{([A-Z])\}/g, (token, type) => energyNames[type] ?? token);
+      item.append(el("p", "attack-effect", effect));
+    }
+    list.append(item);
+  }
+  section.append(list);
+  return section;
+}
+
 function battleStats(card) {
   if (card.category !== "Pokemon") return null;
   let strongest = null;
@@ -387,9 +447,7 @@ function battleStats(card) {
     const isFixed = /^\d+$/.test(mark);
     const damage = isFixed ? Number(mark) : 0;
     if (!isFixed && /[\d?]/.test(mark)) variable = true;
-    const energy = Array.isArray(attack.cost)
-      ? attack.cost.filter(symbol => symbol && String(symbol).toLowerCase() !== "free").length
-      : null;
+    const energy = attackEnergy(attack)?.length ?? null;
     if (damage > 0 && (!strongest || damage > strongest.damage ||
       (damage === strongest.damage && (energy ?? Infinity) < (strongest.energy ?? Infinity)))) {
       strongest = { damage, name: attack.name, energy };
@@ -522,6 +580,7 @@ function renderCard(side) {
   renderQuote(side, price);
   details.append(price);
   stage.append(artwork(card.image, card.name + " card artwork", "high"), details, playStats(card));
+  if (card.category === "Pokemon") stage.append(attacksSection(side));
   updateSwap();
 }
 

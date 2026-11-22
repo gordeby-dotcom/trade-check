@@ -151,6 +151,16 @@ svg { width: 1.35rem; height: 1.35rem; flex: none; fill: none; stroke: currentCo
 .play-stat dt, .role-label { font-size: .875rem; color: var(--muted); }
 .play-stat dd { margin: 3px 0 0; font: 700 1.375rem/1.1 var(--title-font); }
 .play-stat .stat-description { font: 500 .8125rem/1.35 "DM Sans", system-ui, sans-serif; color: var(--muted); overflow-wrap: anywhere; }
+.attacks { grid-column: 1 / -1; padding-top: 11px; border-top: 1px solid var(--dash); }
+.attacks-title { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; color: var(--side-ink); font: 700 1.05rem/1.2 var(--title-font); }
+.attacks-title svg { width: 16px; height: 16px; }
+.attack-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.attack-row { padding: 8px 10px; border: 1px solid var(--dash); border-radius: 8px; background: #ffffffa6; overflow-wrap: anywhere; }
+.attack-top { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 3px 8px; color: var(--ink); }
+.attack-name { font-size: .9375rem; }
+.attack-damage { padding: 2px 6px; border-radius: 5px; background: var(--side-soft); color: var(--side-ink); font-size: .8125rem; }
+.attack-detail, .attack-effect { margin-top: 3px; color: var(--muted); font-size: .875rem; line-height: 1.4; font-weight: 500; }
+.attack-effect { margin-top: 5px; }
 .card-role { display: block; }
 .card-role details { margin-top: 5px; }
 .card-role summary { cursor: pointer; color: var(--blue-deep); width: fit-content; }
